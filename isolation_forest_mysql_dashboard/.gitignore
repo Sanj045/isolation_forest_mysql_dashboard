@@ -1,0 +1,12 @@
+# Môi trường ảo
+venv/
+.venv/
+env/
+
+# File rác của Python
+__pycache__/
+*.pyc
+
+# File dữ liệu nhạy cảm
+*.jsonl
+performance_metrics.jsonl
