@@ -25,3 +25,51 @@ Dự án này là sự kết hợp giữa việc tái hiện bài báo khoa họ
 │   ├── performance_metrics.py       # Đo lường thời gian chạy từ performance_schema
 │   └── schema.sql                   # Tạo Database và bảng
 └── README.md                        # File mô tả dự án
+```
+# 🚀 Hướng dẫn cài đặt và chạy Demo
+1. Yêu cầu hệ thống
+Đã cài đặt Python 3.9+.
+
+Đã cài đặt MySQL Server (Khuyến nghị dùng XAMPP).
+
+Các thư viện Python: pip install -r Quân&Vương/requirements.txt
+
+## 2. Thiết lập Cơ sở dữ liệu
+Mở XAMPP, bật module MySQL.
+
+Mở MySQL Workbench hoặc phpMyAdmin, copy toàn bộ nội dung file Quân&Vương/schema.sql và chạy để tạo Database security_demo.
+
+Mở file Quân&Vương/config.py, kiểm tra lại thông tin user và password cho khớp với MySQL trên máy bạn (mặc định XAMPP là user root, pass trống).
+
+## 3. Khởi chạy Dashboard
+Mở Terminal tại thư mục Quân&Vương và chạy lệnh sau:
+
+bash
+python app.py
+Nhấn Tạo dữ liệu demo để nạp 542 dòng dữ liệu mẫu vào MySQL.
+
+Nhấn Phân tích Isolation Forest để chạy thuật toán của Hiếu và xem điểm bất thường.
+
+Rê chuột vào các cột biểu đồ để xem chi tiết điểm số.
+
+## 4. Chạy Script Đánh giá tự động (Dành cho báo cáo)
+Mở Terminal tại thư mục Hiếu_workspace/3_pipeline_evaluation và chạy lệnh sau:
+
+```text
+python evaluate_pipeline.py
+```
+Script sẽ tự động chạy so sánh giữa Custom Model và Sklearn qua nhiều seed, sau đó xuất kết quả ra file evaluation_results.csv.
+
+## 📊 Kết quả Đánh giá nổi bật
+Dựa trên kết quả chạy script đánh giá trên tập dataset_v1.csv:
+
+Custom Isolation Forest (của nhóm): ROC-AUC đạt 0.8392, PR-AUC đạt 0.3765.
+
+Sklearn Isolation Forest: ROC-AUC đạt 0.8311, PR-AUC đạt 0.3084.
+
+Kết luận: Thuật toán tự viết của nhóm không chỉ hoạt động chính xác mà còn có khả năng xếp hạng rủi ro (ROC-AUC) tốt hơn thư viện chuẩn.
+
+## ⚠️ Hạn chế và Hướng phát triển
+Khả năng mở rộng (Scalability): Thuật toán Custom hiện dùng vòng lặp Python nên sẽ chạy chậm nếu dữ liệu tăng lên 10.000+ dòng. Hướng khắc phục: Vector hóa bằng NumPy hoặc dùng phân trang (Pagination) trên giao diện.
+
+Chỉ số đo lường từ MySQL: Log thật của MySQL không cung cấp rows_examined trực tiếp cho mỗi câu lệnh trong bảng log. Hệ thống hiện tại chỉ hiển thị được duration_ms. Hướng khắc phục: Tích hợp sâu hơn với performance_schema và đồng bộ dữ liệu real-time.
