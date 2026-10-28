@@ -1,3 +1,4 @@
+
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from datetime import datetime, timedelta
@@ -177,9 +178,15 @@ class Dashboard(tk.Tk):
         self.tree = ttk.Treeview(table_frame, columns=columns, show="headings", height=10)
         headings = {"id":"ID", "time":"Thời gian", "user":"Tài khoản", "role":"Vai trò", "operation":"SQL", "table":"Bảng", "rows":"Số dòng", "duration":"ms", "score":"Điểm", "label":"Kết quả", "details":"Chi tiết"}
         widths = {"id":55, "time":145, "user":100, "role":75, "operation":75, "table":95, "rows":75, "duration":70, "score":70, "label":130, "details":300}
+        
+        # KHỞI TẠO BIẾN LƯU TRẠNG THÁI SẮP XẾP
+        self.sort_reverse = {col: False for col in columns}
+        
         for col in columns:
-            self.tree.heading(col, text=headings[col])
+            # THÊM LỆNH COMMAND ĐỂ BẮT SỰ KIỆN CLICK CHUỘT VÀO TIÊU ĐỀ CỘT
+            self.tree.heading(col, text=headings[col], command=lambda c=col: self.sort_treeview(c))
             self.tree.column(col, width=widths[col], minwidth=50, anchor="w")
+            
         yscroll = ttk.Scrollbar(table_frame, orient="vertical", command=self.tree.yview)
         xscroll = ttk.Scrollbar(table_frame, orient="horizontal", command=self.tree.xview)
         self.tree.configure(yscrollcommand=yscroll.set, xscrollcommand=xscroll.set)
@@ -346,6 +353,32 @@ class Dashboard(tk.Tk):
                 f"{float(row.get('duration_ms', 0)):.1f}", score_str, result, row.get("details", ""),
             )
             self.tree.insert("", "end", values=values, tags=("anomaly" if is_anomaly else "normal",))
+
+    def sort_treeview(self, col):
+        # HÀM XỬ LÝ SẮP XẾP KHI CLICK VÀO CỘT
+        if self.results.empty:
+            return
+            
+        # Ánh xạ tên cột giao diện sang tên cột trong DataFrame
+        mapping = {
+            "id": "id", "time": "event_time", "user": "db_user", "role": "user_role",
+            "operation": "operation", "table": "table_name", "rows": "rows_affected",
+            "duration": "duration_ms", "score": "anomaly_score", "label": "prediction",
+            "details": "details"
+        }
+        df_col = mapping.get(col, col)
+        
+        # Đảo ngược trạng thái sắp xếp hiện tại
+        reverse = self.sort_reverse.get(col, False)
+        
+        if col == "label":
+            # Nếu sắp xếp theo "Kết quả", ưu tiên BẤT THƯỜNG (-1) lên đầu
+            self.results = self.results.sort_values(by="prediction", ascending=True if not reverse else False)
+        else:
+            self.results = self.results.sort_values(by=df_col, ascending=not reverse)
+            
+        self.sort_reverse[col] = not reverse
+        self._refresh_table(self.results, analyzed=True)
 
     def _draw_charts(self, df):
         self.ax1.clear(); self.ax2.clear()
